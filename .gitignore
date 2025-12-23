@@ -1,7 +1,7 @@
 __pycache__/
 config/
 .vscode/
-
+.DS_Store
 
 Pipfile*
 

@@ -1,13 +1,12 @@
-from pathlib import Path
-from urllib.parse import urljoin
-
 ROOT_URL = "https://geocoding.geo.census.gov/geocoder"
 
 PROFILE = {
-    "BASE_URL": urljoin(ROOT_URL) + "/",
+    "BASE_URL": ROOT_URL + "/",
     "PARAMETERS": {
-        "layers": "54", # congress district,
-        "searchtype": "onelineaddress", # see readme
-        "returntype": "geographies", # prob something else needed but tbd.
+        # NOTE: Census Geocoder uses /geocoder/{returntype}/{searchtype} in the PATH.
+        # So `returntype` is NOT a query param; don't put it in PARAMETERS.
+        "benchmark": 4,
+        "vintage": "Current_Current",
+        "layers": "54",  # 119th Congressional Districts (Current service)
     }
 }

@@ -30,7 +30,7 @@ class _MethodWrapper:
         self._method = getattr(parent._session, http_method)
 
 
-    def __call__(self, endpoint, *args, **kwargs):
+    def __call__(self, endpoint, *args, **kwargs) -> APIResponse:
 
         """TODO: add caching of requests deal figure out how to use it with the APIResponese class?  
                  could maybe do some cool things with it tbh
@@ -44,9 +44,9 @@ class _MethodWrapper:
                  -> maybe not even in a db just a local mem that stores the requests and responses? idk tbd
         """
 
-        response = self._method(
-            urljoin(self._parent.base_url, endpoint), *args, **kwargs
-        )
+        endpoint = str(endpoint).lstrip("/")
+
+        response = self._method(urljoin(self._parent.base_url, endpoint), *args, **kwargs)
         
         if response.headers.get("content-type", "").startswith("application/json"):
             # just overriding content 'b' (by default) to the json obj
