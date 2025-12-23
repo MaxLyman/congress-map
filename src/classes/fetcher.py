@@ -11,7 +11,7 @@ from dataclasses import dataclass
 def _load_api_key(config_path):
     config = configparser.ConfigParser()
     config.read(config_path)
-    return config.get("api key", "account_key")
+    return config.get("api_key", "account_key")
 
 
 @dataclass

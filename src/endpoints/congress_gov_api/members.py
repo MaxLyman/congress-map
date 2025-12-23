@@ -1,5 +1,5 @@
-from typing import int, Dict, List
-from classes.fetcher import Fetcher
+from typing import Dict, List
+from src.classes.fetcher import Fetcher
 
 
 class Member():
@@ -39,9 +39,9 @@ class Member():
         return response.content
 
     
-    def get_member_congress_congress(self, congress: int) -> Dict:
+    def get_member_congress_(self, congress: int) -> Dict:
         """
-            get_member_congress_congressReturns the list of members specified by Congress:
+            get_member_congress_ Returns the list of members specified by Congress:
         """
         response = self.f.get(f"member/congress/{congress}")
         return response.content
@@ -61,12 +61,28 @@ class Member():
         response = self.f.get(f"member/{state_code}/{district}")
         return response.content
 
-    def get_member_congress_statecode_district(self, congress:int, state_code:str, district:dict) -> Dict:
+    def get_member_congress_statecode_district(self, congress:int, state_code:str, district:str) -> Dict:
         """
             get_member_congress_congress_stateCode_districtReturns a list of members filtered by congress, state and district.:
         """
-        response = self.f.get(f"member/{congress}/{state_code}/{district}")
+        response = self.f.get(f"member/congress/{congress}/{state_code}/{district}")
         return response.content
 
 
+
+
+
+if __name__ == "__main__":
+    from src.utils.misc_utils import fips_to_abbr
+    from src.endpoints.congress_gov_api.fetcher_profile import PROFILE as CONGRESS_PROFILE
+
+    from src.endpoints.congress_gov_api.members import Member
+    congress_fetcher = Fetcher(CONGRESS_PROFILE)
+
+    member = Member(congress_fetcher)
+
+
+    response = member.get_member_congress_statecode_district(119, fips_to_abbr('36'), '07')
+
+    print(response)
 

@@ -1,7 +1,7 @@
 import src.utils.typesafe_utils as t
 from src.classes.fetcher import Fetcher
 
-from src.utils.loose_math_utils import centroid_to_lon_lat
+from src.utils.misc_utils import centroid_to_lon_lat
 
 
 class Tigerweb:
