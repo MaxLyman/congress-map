@@ -34,8 +34,10 @@ def congress_districts():
     zipcode = t.dig(request.args, ["zipcode"])
 
     if zipcode:
+        lon_lat = tiger_fetcher.get_tigerweb_zip_to_centroid(zipcode)
+        district_info = tiger_fetcher.get_congressional_district_from_centroid(*lon_lat)
 
-        return jsonify("ZIPCODE DISTRICTS")
+        return jsonify({"content": district_info}, 200)
 
 
     return jsonify({"error_msg": "no zipcode or address found"}, 404)
@@ -51,7 +53,20 @@ def congress_representatives():
     congressional_reps = []
 
     if address:
-        return jsonify("ADDRESS RESPONSE")
+        response_content = arcgis.get_arcgis_address(address)
+
+        geographies = t.dig(response_content, ["result", "addressMatches", 0, "geographies"])
+
+        for district in t.dig(list(geographies.values()), [0], []):
+            state_code = fips_to_abbr(t.dig(district, ["STATE"]))
+            district_code = t.dig(district, ['BASENAME'])
+            congressional_reps.append(member.get_member_congress_statecode_district(
+                CURRENT_CONGRESS,
+                state_code,
+                district_code
+            ))
+
+        return jsonify({"content": congressional_reps}, 200)
     
 
     if zipcode:
@@ -85,6 +100,6 @@ def congress_representatives():
 if __name__ == "__main__":
     app.testing = True
     with app.test_client() as c:
-        r = c.get("/congress/representatives", query_string={"zipcode": "11211"})
+        r = c.get("/congress/representatives", query_string={"address": "16 Grenville Rd Watertown MA, 02472"})
         print(r.status_code)
         print(r.get_json())
