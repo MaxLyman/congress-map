@@ -8,6 +8,32 @@ Interactive map that allows you to easily put in your address and find the congr
 Miro board: https://miro.com/app/board/uXjVGbsUf0w=/
 
 
+# TODO:
+
+flask has water running through it.  MapJs library? for a fun frontend  with vite for the dev server?
+
+to deploy i think building react as static files? and then serve w/ flask; running flask with gunicorn 
+
+[A beginners guide to using Vite React](https://codeparrot.ai/blogs/a-beginners-guide-to-using-vite-react)
+
+[MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/)
+
+for local dev mount the flask server to /api
+
+```js
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+      },
+    },
+  },
+});
+```
+
 
 GOALS
 AI summary of congresspersons voting record/ policies 

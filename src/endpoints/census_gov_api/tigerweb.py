@@ -92,7 +92,7 @@ class Tigerweb:
         
         """
         params = {
-            "geometry": f"{lon},{lat}",          # lon,lat
+            "geometry": f"{lon},{lat}",
             "geometryType": "esriGeometryPoint",
             "inSR": "4326",
             "spatialRel": "esriSpatialRelIntersects",

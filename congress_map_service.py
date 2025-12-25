@@ -25,8 +25,7 @@ arcgis = Arcgis(census_fetcher)
 
 tiger_fetcher = Tigerweb()
 
-
-CURRENT_CONGRESS = congress.get_current_congress_number()
+CURRENT_CONGRESS = lambda: congress.get_current_congress_number()
 
 @app.route("/congress/districts", methods=["GET"])
 def congress_districts():
@@ -61,7 +60,7 @@ def congress_representatives():
             state_code = fips_to_abbr(t.dig(district, ["STATE"]))
             district_code = t.dig(district, ['BASENAME'])
             congressional_reps.append(member.get_member_congress_statecode_district(
-                CURRENT_CONGRESS,
+                CURRENT_CONGRESS(),
                 state_code,
                 district_code
             ))
@@ -77,13 +76,13 @@ def congress_representatives():
         districts_in_centroid = t.dig(district_info, ["features"], [])
         for district_attr in districts_in_centroid:
             state_code = fips_to_abbr(t.dig(district_attr, ['attributes', 'STATE']))
-            congress_code = f'CD{CURRENT_CONGRESS}'
+            congress_code = f'CD{CURRENT_CONGRESS()}'
 
             district = t.dig(district_attr, ['attributes', congress_code])
 
             congressional_reps.append(
                 member.get_member_congress_statecode_district(
-                    CURRENT_CONGRESS,
+                    CURRENT_CONGRESS(),
                     state_code,
                     district
                 )
