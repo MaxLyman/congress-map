@@ -1,4 +1,6 @@
+from pprint import pprint
 import src.utils.typesafe_utils as t
+
 
 from typing import Optional
 from src.classes.fetcher import Fetcher
@@ -38,6 +40,6 @@ if __name__ == '__main__':
     fetcher = Fetcher(PROFILE)
 
     arcgis_api = Arcgis(fetcher)
-    response = arcgis_api.get_arcgis_address("16 Grenville Rd Watertown MA, 02472")
+    response = arcgis_api.get_arcgis_address("212 Boston ave, Somerville, MA")
 
-    print(response)
+    pprint(response)

@@ -54,7 +54,7 @@ def congress_representatives():
     if address:
         response_content = arcgis.get_arcgis_address(address)
 
-        geographies = t.dig(response_content, ["result", "addressMatches", 0, "geographies"])
+        geographies = t.dig(response_content, ["result", "addressMatches", 0, "geographies"], {})
 
         for district in t.dig(list(geographies.values()), [0], []):
             state_code = fips_to_abbr(t.dig(district, ["STATE"]))
@@ -64,6 +64,9 @@ def congress_representatives():
                 state_code,
                 district_code
             ))
+
+        if not congressional_reps:
+            jsonify({"content": congressional_reps}, 404)
 
         return jsonify({"content": congressional_reps}, 200)
     
@@ -99,6 +102,6 @@ def congress_representatives():
 if __name__ == "__main__":
     app.testing = True
     with app.test_client() as c:
-        r = c.get("/congress/representatives", query_string={"address": "16 Grenville Rd Watertown MA, 02472"})
+        r = c.get("/congress/representatives", query_string={"address": "212 Boston ave, Somerville, MA"})
         print(r.status_code)
         print(r.get_json())
