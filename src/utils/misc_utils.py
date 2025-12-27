@@ -1,5 +1,18 @@
 import math
 
+from src.classes.fetcher import Fetcher
+from src.endpoints.congress_gov_api.fetcher_profile import PROFILE
+from src.endpoints.congress_gov_api.congress import Congress
+
+
+# gotta be a better way 
+def get_current_congress():
+    fetcher_profile = Fetcher(PROFILE)
+    congress: Congress  = Congress(fetcher_profile)
+    return congress.get_current_congress_number()
+
+
+
 
 def centroid_to_lon_lat(xmin: int, xmax:int, ymin:int, ymax:int):
 

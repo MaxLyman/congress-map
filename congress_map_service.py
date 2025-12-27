@@ -1,43 +1,22 @@
 import src.utils.typesafe_utils as t
-from src.utils.misc_utils import fips_to_abbr
-from flask import Flask, request, jsonify
+from src.utils.db_utils import create_app, Services
 
-from src.classes.fetcher import Fetcher
-from src.endpoints.congress_gov_api.fetcher_profile import PROFILE as CONGRESS_PROFILE
-from src.endpoints.congress_gov_api.congress import Congress
-from src.endpoints.congress_gov_api.members import Member
+from flask import request, jsonify
 
-from src.endpoints.census_gov_api.fetcher_profile import PROFILE as CENSUS_PROFILE
-from src.endpoints.census_gov_api.arcgis import Arcgis
-from src.endpoints.census_gov_api.tigerweb import Tigerweb
-
-
-
-app = Flask(__name__)
-congress_fetcher = Fetcher(CONGRESS_PROFILE)
-
-congress = Congress(congress_fetcher)
-member = Member(congress_fetcher)
-
-
-census_fetcher = Fetcher(CENSUS_PROFILE)
-arcgis = Arcgis(census_fetcher)
-
-tiger_fetcher = Tigerweb()
-
-CURRENT_CONGRESS = lambda: congress.get_current_congress_number()
+app = create_app()
 
 @app.route("/congress/districts", methods=["GET"])
 def congress_districts():
     """GET ~/congress/districts?zipcode={zipcode} -> {}"""
     zipcode = t.dig(request.args, ["zipcode"])
-
+    services: Services = app.extensions["services"]
+    
+    district_list = []
     if zipcode:
-        lon_lat = tiger_fetcher.get_tigerweb_zip_to_centroid(zipcode)
-        district_info = tiger_fetcher.get_congressional_district_from_centroid(*lon_lat)
+        district_list = services.census_service.district_from_zip_code(zipcode)
 
-        return jsonify({"content": district_info}, 200)
-
+    if district_list:
+        return jsonify({"content": district_list}, 200)
 
     return jsonify({"error_msg": "no zipcode or address found"}, 404)
 
@@ -48,60 +27,42 @@ def congress_representatives():
 
     address = t.dig(request.args, ["address"])
     zipcode = t.dig(request.args, ["zipcode"])
-
-    congressional_reps = []
+    services: Services = app.extensions["services"]
+    
+    if not address and not zipcode:
+        return  jsonify({"error_msg": "no zipcode or address found"}, 404)
 
     if address:
-        response_content = arcgis.get_arcgis_address(address)
-
-        geographies = t.dig(response_content, ["result", "addressMatches", 0, "geographies"], {})
-
-        for district in t.dig(list(geographies.values()), [0], []):
-            state_code = fips_to_abbr(t.dig(district, ["STATE"]))
-            district_code = t.dig(district, ['BASENAME'])
-            congressional_reps.append(member.get_member_congress_statecode_district(
-                CURRENT_CONGRESS(),
-                state_code,
-                district_code
-            ))
-
-        if not congressional_reps:
-            jsonify({"content": congressional_reps}, 404)
-
-        return jsonify({"content": congressional_reps}, 200)
-    
+        district_list = services.census_service.district_from_address(address)
 
     if zipcode:
+        district_list = services.census_service.district_from_zip_code(zipcode)
+        
 
-        lon_lat = tiger_fetcher.get_tigerweb_zip_to_centroid(zipcode)
-        district_info = tiger_fetcher.get_congressional_district_from_centroid(*lon_lat)
+    congressional_reps = services.congress_service.congressional_members_in_district(district_list)
 
-        districts_in_centroid = t.dig(district_info, ["features"], [])
-        for district_attr in districts_in_centroid:
-            state_code = fips_to_abbr(t.dig(district_attr, ['attributes', 'STATE']))
-            congress_code = f'CD{CURRENT_CONGRESS()}'
+    if not congressional_reps:
+        jsonify({"content": congressional_reps}, 404)
 
-            district = t.dig(district_attr, ['attributes', congress_code])
-
-            congressional_reps.append(
-                member.get_member_congress_statecode_district(
-                    CURRENT_CONGRESS(),
-                    state_code,
-                    district
-                )
-            )
-
-        return jsonify({"content": congressional_reps}, 200)
-
-
-    return  jsonify({"error_msg": "no zipcode or address found"}, 404)
+    return jsonify({"content": congressional_reps}, 200)
+    
 
 
 
 
 if __name__ == "__main__":
+    # Dev server entrypoint (prefer `flask --app congress_map_service:app run` for reload/debug)
+    # app.run(host="127.0.0.1", port=5000, debug=True)
+    # /congress/representatives", query_string={"address": "212 Boston ave, Somerville, MA"})
+
+
+    from pprint import pprint
+
     app.testing = True
     with app.test_client() as c:
-        r = c.get("/congress/representatives", query_string={"address": "212 Boston ave, Somerville, MA"})
+        r = c.get(
+            "/congress/representatives",
+            query_string={"address": "122 Boston ave, Somerville, MA"},
+        )
         print(r.status_code)
-        print(r.get_json())
+        pprint(r.get_json())

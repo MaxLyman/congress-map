@@ -3,7 +3,6 @@ import src.utils.typesafe_utils as t
 from typing import Dict
 from src.classes.fetcher import Fetcher
 
-
 class Congress:
     def __init__(self, fetcher: Fetcher):
         self.f: Fetcher = fetcher
@@ -43,8 +42,6 @@ class Congress:
         return -1 
         
         
-
-
 
 
 if __name__ == "__main__":
