@@ -1,12 +1,16 @@
 import src.utils.typesafe_utils as t
+
+from typing import List
 from src.classes.fetcher import Fetcher
+from src.endpoints.data_classes import District
 
 from src.utils.misc_utils import centroid_to_lon_lat
-
 
 class Tigerweb:
 
     def __init__(self, fetcher=None):
+
+        
         if not fetcher:
             self.f: Fetcher = Fetcher(
                 {
@@ -106,8 +110,10 @@ class Tigerweb:
             params=params
         )
 
-
         return response.content
+    
+
+
 
 if __name__ == "__main__":
     tiger_fetcher = Tigerweb()

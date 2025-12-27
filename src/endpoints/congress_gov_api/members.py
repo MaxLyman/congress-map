@@ -1,7 +1,6 @@
 from typing import Dict, List
 from src.classes.fetcher import Fetcher
 
-
 class Member():
 
     def __init__(self, fetcher: Fetcher):
@@ -61,11 +60,14 @@ class Member():
         response = self.f.get(f"member/{state_code}/{district}")
         return response.content
 
-    def get_member_congress_statecode_district(self, congress:int, state_code:str, district:str) -> Dict:
+    def get_member_congress_statecode_district(self, congress:int, state_code:str, district_code:str) -> Dict:
         """
             get_member_congress_congress_stateCode_districtReturns a list of members filtered by congress, state and district.:
         """
-        response = self.f.get(f"member/congress/{congress}/{state_code}/{district}")
+        response = self.f.get(f"member/congress/{congress}/{state_code}/{district_code}")
+        # TODO: conform this to the CongressMember data class (handle TERM (maybe do this in the congress_service?))
+        # or just do a public private method _get_member_congress_statecode_district 
+        # get_member_congress_statecode_district handling conversion logic? 
         return response.content
 
 

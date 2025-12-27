@@ -38,6 +38,7 @@ export default defineConfig({
 GOALS
 AI summary of congresspersons voting record/ policies 
 News feed related to your congressional district
+synopsis of congressional funding (where their money is coming from (fec data))
 
 
 FAR Goals:
@@ -91,6 +92,61 @@ vscode run current file from root dir: launch.json:
 ```
 
 Utils: t.dig() for typesafe dict access 
-ex:
+
+my design: 
+computation is done in endpoint services endpoint classes are strictly fetchers
+
+the front flask service is the entry point which corresponds to the endpoint services.
+
+No idea if this fully works 
+### books to read: 
+David Daily: Unrigged, rat fucked
+
+## Local dev (Flask)
+
+### Setup
+
+```bash
+cd /Users/admin/Desktop/personal/congressMap
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### API key
+
+Create `config/api_congress_gov.ini` (this file is gitignored):
+
+```ini
+[api_key]
+account_key=YOUR_CONGRESS_GOV_API_KEY
+```
+
+### Database (SQLite)
+
+This project defaults to a local, untracked SQLite DB at `instance/congress_map.db`.
+
+To initialize the schema with migrations:
+
+```bash
+mkdir -p instance
+export FLASK_APP=congress_map_service:app
+flask db init
+flask db migrate -m "init"
+flask db upgrade
+```
+
+### Run the server
+
+```bash
+export FLASK_APP=congress_map_service:app
+flask run
+```
+
+Optionally override the DB location:
+
+```bash
+export DATABASE_URL="sqlite:///instance/congress_map.db"
+```
 
 
