@@ -1,6 +1,7 @@
 import src.utils.typesafe_utils as t
 from src.utils.misc_utils import fips_to_abbr
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 from src.classes.fetcher import Fetcher
 from src.endpoints.congress_gov_api.fetcher_profile import PROFILE as CONGRESS_PROFILE
@@ -14,6 +15,7 @@ from src.endpoints.census_gov_api.tigerweb import Tigerweb
 
 
 app = Flask(__name__)
+CORS(app)
 congress_fetcher = Fetcher(CONGRESS_PROFILE)
 
 congress = Congress(congress_fetcher)
@@ -48,6 +50,8 @@ def congress_representatives():
 
     address = t.dig(request.args, ["address"])
     zipcode = t.dig(request.args, ["zipcode"])
+    lat = t.dig(request.args, ["lat"])
+    lon = t.dig(request.args, ["lon"])
 
     congressional_reps = []
 
@@ -93,8 +97,34 @@ def congress_representatives():
 
         return jsonify({"content": congressional_reps}, 200)
 
+    if lat and lon:
 
-    return  jsonify({"error_msg": "no zipcode or address found"}, 404)
+        try:
+            lon_lat = (float(lon), float(lat))
+        except (TypeError, ValueError):
+            return jsonify({"error_msg": "lat and lon must be valid numbers"}, 400)
+
+        district_info = tiger_fetcher.get_congressional_district_from_centroid(*lon_lat)
+
+        districts_in_centroid = t.dig(district_info, ["features"], [])
+        for district_attr in districts_in_centroid:
+            state_code = fips_to_abbr(t.dig(district_attr, ['attributes', 'STATE']))
+            congress_code = f'CD{CURRENT_CONGRESS()}'
+
+            district = t.dig(district_attr, ['attributes', congress_code])
+
+            congressional_reps.append(
+                member.get_member_congress_statecode_district(
+                    CURRENT_CONGRESS(),
+                    state_code,
+                    district
+                )
+            )
+
+        return jsonify({"content": congressional_reps}, 200)
+
+
+    return  jsonify({"error_msg": "no zipcode or address found"}, 400)
 
 
 
